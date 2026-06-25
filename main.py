@@ -15,7 +15,7 @@ sound_enabled= True # Ses efektleri var ya da yok
 # Oyuncu değerleri
 player_lives = 3
 score = 0
-max_score_to_win = 500  # Bu skora ulaşınca oyun kazanılacak
+max_score_to_win = 5000  # Bu skora ulaşınca oyun kazanılır
 
 
 class MenuButton:
@@ -26,30 +26,28 @@ class MenuButton:
         self.text_color = text_color
 
     def draw(self):
-        #Butonun arka planını çizer
         screen.draw.filled_rect(self.rect, self.color)
-        #Butonun metnini çizer
         screen.draw.text(self.text, center=self.rect.center, fontsize=30, color=self.text_color)
     
     def is_clicked(self,pos):
-        # Fare ile tıklanan noktanın (pos) butonun içinde olup olmadığını kontrol eder
+        # Fare ile tıklanan noktanın (pos) butonun içinde olup olmadığını kontrol ediyoruz
         return self.rect.collidepoint(pos)
     
-# Buton Nesnelerimizi Ekranın Ortasına Hizalayarak Oluşturuyoruz
-button_width = 200
-button_height = 50
-start_x = (WIDTH - button_width) // 2
+
 
 class MenuButton(Actor):
     def __init__(self, image_name, pos):
-        # Pygame Zero Actor sınıfını başlatıyoruz
         super().__init__(image_name, pos)
 
     def is_clicked(self, pos):
-        # Actor'ün kendi collidepoint özelliği sayesinde tıklamayı algılıyoruz
+
         return self.collidepoint(pos)
 
-# Tüm butonların dikey hizası aynı (Y = 400), yatayda ise aralarında eşit boşluklar var
+# Buton boyutları
+button_width = 200
+button_height = 50
+start_x = (WIDTH - button_width) // 2
+# Tüm butonların konumu
 btn_start = MenuButton("btn_play", (220, 400))
 btn_sound = MenuButton("btn_sound_on", (400, 400))
 btn_exit = MenuButton("btn_exit", (580, 400))
@@ -57,7 +55,6 @@ btn_exit = MenuButton("btn_exit", (580, 400))
 
 class Hero(Actor):
     def __init__(self, pos):
-        # Karakteri ilk resimle (hero_idle1) başlatıyoruz
         super().__init__("hero_idle1", pos)
         
         # Animasyon kare listeleri (images klasöründeki dosya isimleri)
@@ -66,7 +63,7 @@ class Hero(Actor):
         
         self.current_frame = 0
         self.animation_time = 0
-        self.state = "idle" # "idle" (durma) veya "run" (koşma) [cite: 81, 79]
+        self.state = "idle" # "idle" (durma) veya "run" (koşma)
         
         # Fizik ve Hareket Değişkenleri
         self.velocity_y = 0  # Dikey hız (Yerçekimi için)
@@ -77,7 +74,7 @@ class Hero(Actor):
         # Animasyon hızını kontrol etmek için zamanlayıcı
         self.animation_time += 1
         
-        # Her 6 karede bir (yaklaşık 0.1 saniye) resmi değiştir
+        # Her 6 karede bir (yaklaşık 0.1 saniye) resmi değiştirir
         if self.animation_time >= 6:
             self.animation_time = 0
             
@@ -89,13 +86,11 @@ class Hero(Actor):
                 self.image = self.run_frames[self.current_frame]
 
     def update_physics(self):
-        # 1. Yerçekimi Uygulama (Platformer mekaniği) 
         if not self.is_on_ground:
             self.velocity_y += 0.5  # Aşağı doğru ivmelenme
             
         self.y += self.velocity_y
         
-        # 2. Geçici Taban/Yer Çizgisi Kontrolü (Ekranın altı)
         # Karakter ekranın altına (örneğin y=500'e) ulaştığında dursun
         if self.y >= 500:
             self.y = 500
@@ -103,12 +98,12 @@ class Hero(Actor):
             self.is_on_ground = True
 
     def jump(self):
-        # Sadece yerdeyken zıplayabilir (Platformer kuralı) 
+        # Sadece yerdeyken zıplayabilir
         if self.is_on_ground:
             self.velocity_y = -12
             self.is_on_ground = False
             self.state = "idle"
-            # EĞER SES AÇIKSA ZIPLAMA SESİNİ ÇAL
+            # ses on ise zıplama sesi
             if sound_enabled:
                 sounds.jump_sound.play()
 
@@ -121,7 +116,7 @@ class Enemy(Actor):
         self.current_frame = 0
         self.animation_time = 0
         
-        # Devriye Sınırları ve Hareket
+        
         self.limit_left = limit_left
         self.limit_right = limit_right
         self.speed = speed
@@ -180,7 +175,7 @@ def draw_menu():
 
 def draw_game():
     screen.fill((50, 50, 50))  # Oyun ekranı için gri arka plan
-    # Geçici bir yer çizgisi çizelim (Platformer hissi için)
+    # Geçici bir yer çizgisi çizelim
     screen.draw.filled_rect(Rect(0, 532, WIDTH, 68), (34, 49, 63))
     
     # Kahramanımızı ekrana çiziyoruz
@@ -264,7 +259,7 @@ def update_game():
     # Zamanla skoru artır
     score += 1
     
-    # STANDART KARE ÇARPIŞMA MANTIĞI (Önceki Güvenli Halimiz)
+    # Çarpışma Kontrolü: Oyuncu ile Düşman
     for enemy in enemies:
         if player.colliderect(enemy):
             player_lives -= 1
